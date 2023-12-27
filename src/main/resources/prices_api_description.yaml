@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: Prices application
+  description: |-
+    This is a sample Prices application based on the OpenAPI 3.0 specification.
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: hnfiorini@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0-SNAPSHOT
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:8080/v1
+tags:
+  - name: prices
+    description: Operations with prices
+paths:
+  /prices:
+    get:
+      tags:
+        - prices
+      summary: Finds Price by specific params
+      description: Get price given a few params
+      operationId: findPriceByParams
+      parameters:
+        - name: dateToBeApplied
+          in: query
+          description: Date on which the price is to be applied
+          required: true
+          explode: true
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}-\d{2}-\d{2}\.\d{2}\.\d{2}$'
+            example: "2020-06-14-00.00.00"
+        - name: productId
+          in: query
+          description: Product code identifier
+          required: true
+          explode: true
+          schema:
+            type: integer
+        - name: brandId
+          in: query
+          description: Brand key
+          required: true
+          explode: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+        '400':
+          description: Invalid params value
+        '404':
+          description: Price not found
+components:
+  schemas:
+    PriceResponse:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 35455
+        brandId:
+          type: integer
+          example: 1
+        price:
+          type: number
+          example: 35.40
+        startDate:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}-\d{2}\.\d{2}\.\d{2}$'
+          example: "2020-06-14-00.00.00"
+        endDate:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}-\d{2}\.\d{2}\.\d{2}$'
+          example: "2020-06-14-00.00.00"
+        priceToBeApplied:
+          type: number
+          example: 30.50
+      xml:
+        name: priceResponse

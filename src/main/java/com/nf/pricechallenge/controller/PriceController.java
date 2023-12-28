@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -21,7 +22,8 @@ public class PriceController implements PricesApi {
 
     @Override
     public ResponseEntity<PriceResponse> findPriceByParams(String dateToBeApplied, Integer productId, Integer brandId) {
-        Optional<PriceResponse> priceOptional = priceService.findPrice();
+
+        Optional<PriceResponse> priceOptional = priceService.findPrice(LocalDateTime.parse(dateToBeApplied), Long.valueOf(productId), Long.valueOf(brandId));
         if (priceOptional.isPresent()) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

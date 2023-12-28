@@ -21,9 +21,9 @@ public class PriceController implements PricesApi {
 
 
     @Override
-    public ResponseEntity<PriceResponse> findPriceByParams(String dateToBeApplied, Integer productId, Integer brandId) {
+    public ResponseEntity<PriceResponse> findPriceByParams(String dateToBeApplied, Long productId, Long brandId) {
 
-        Optional<PriceResponse> priceOptional = priceService.findPrice(LocalDateTime.parse(dateToBeApplied), Long.valueOf(productId), Long.valueOf(brandId));
+        Optional<PriceResponse> priceOptional = priceService.findPrice(LocalDateTime.parse(dateToBeApplied), productId, brandId);
         if (priceOptional.isPresent()) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

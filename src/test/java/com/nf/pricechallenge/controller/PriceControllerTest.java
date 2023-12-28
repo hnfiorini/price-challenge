@@ -1,89 +1,61 @@
 package com.nf.pricechallenge.controller;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.LinkedMultiValueMap;
+import com.nf.pricechallenge.service.PriceService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.openapitools.model.PriceResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.math.BigDecimal;
+import java.util.Optional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class PriceControllerTest {
 
-    @Autowired
-    private MockMvc mvc;
+    @InjectMocks
+    private PriceController priceController;
 
-    @ParameterizedTest
-    @CsvSource({
-            ", 15, 2",
-            "2020-06-15T00:00:00,, 10",
-            "2020-06-15T00:00:00, 233,"
-    })
-    void findPriceByParams_ThrowErrorIfParamsAreNull(String dateToBeApplied, Integer productId, Integer brandId) throws Exception {
+    @Mock
+    private PriceService priceService;
 
-        mvc.perform(MockMvcRequestBuilders
-                        .get("/prices")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-
+    @Test
+    void findPriceByParams_givenValidValuesReturnOk() {
+        PriceResponse priceResponse = new PriceResponse();
+        priceResponse.setPrice(new BigDecimal("35.4"));
+        priceResponse.setStartDate("2020-06-14T00:00:00");
+        priceResponse.setEndDate("2020-12-31T23:59:59");
+        priceResponse.setProductId(35455L);
+        priceResponse.setBrandId(1L);
+        when(priceService.findPrice(any(), any(), any())).thenReturn(Optional.of(priceResponse));
+        String dateToBeApplied = "2020-06-14T10:00:00";
+        Long productId = 35455L;
+        Long brandId = 1L;
+        ResponseEntity<PriceResponse> price = priceController.findPriceByParams(dateToBeApplied, productId, brandId);
+        assertEquals(price.getStatusCode(), HttpStatus.OK);
+        assertNotNull(price.getBody());
+        assertEquals(new BigDecimal("35.4"), price.getBody().getPrice());
+        assertEquals("2020-06-14T00:00:00", price.getBody().getStartDate());
+        assertEquals("2020-12-31T23:59:59", price.getBody().getEndDate());
+        assertEquals(35455L, price.getBody().getProductId());
+        assertEquals(1L, price.getBody().getBrandId());
     }
 
-
-    @ParameterizedTest
-    @CsvSource({
-            "2020-06-14T10:00:00, 35455, 1, 35.5",
-            "2020-06-14T16:00:00, 35455, 1, 25.45",
-            "2020-06-14T21:00:00, 35455, 1, 35.5",
-            "2020-06-15T10:00:00, 35455, 1, 30.5",
-            "2020-06-16T21:00:00, 35455, 1, 38.95",
-    })
-    void findPriceByParams_ReturnPriceStatus200(String dateToBeApplied, Integer productId, Integer brandId, String resultExpected) throws Exception {
-
-        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
-        requestParams.add("dateToBeApplied", dateToBeApplied);
-        requestParams.add("productId", productId.toString());
-        requestParams.add("brandId", brandId.toString());
-
-        mvc.perform(MockMvcRequestBuilders
-                        .get("/prices")
-                        .params(requestParams)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productId").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(resultExpected));
-
+    @Test
+    void findPriceByParams_givenValidValuesReturnNotFound() {
+        when(priceService.findPrice(any(), any(), any())).thenReturn(Optional.empty());
+        String dateToBeApplied = "2020-06-14T10:00:00";
+        Long productId = 35456L;
+        Long brandId = 2L;
+        ResponseEntity<PriceResponse> price = priceController.findPriceByParams(dateToBeApplied, productId, brandId);
+        assertEquals(price.getStatusCode(), HttpStatus.NOT_FOUND);
     }
-
-    @ParameterizedTest
-    @CsvSource({
-            "2020-06-14T10:00:00, 35444, 1",
-            "2020-06-14T16:00:00, 35455, 2",
-            "2021-06-14T21:00:00, 35455, 1",
-    })
-    void findPriceByParams_ReturnNotFound404(String dateToBeApplied, Integer productId, Integer brandId) throws Exception {
-
-        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
-        requestParams.add("dateToBeApplied", dateToBeApplied);
-        requestParams.add("productId", productId.toString());
-        requestParams.add("brandId", brandId.toString());
-
-        mvc.perform(MockMvcRequestBuilders
-                        .get("/prices")
-                        .params(requestParams)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-
-    }
-
 }

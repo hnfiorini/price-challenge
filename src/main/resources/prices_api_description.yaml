@@ -43,6 +43,7 @@ paths:
           explode: true
           schema:
             type: integer
+            format: int64
         - name: brandId
           in: query
           description: Brand key
@@ -50,6 +51,7 @@ paths:
           explode: true
           schema:
             type: integer
+            format: int64
       responses:
         '200':
           description: successful operation
@@ -71,9 +73,11 @@ components:
       properties:
         productId:
           type: integer
+          format: int64
           example: 35455
         brandId:
           type: integer
+          format: int64
           example: 1
         price:
           type: number

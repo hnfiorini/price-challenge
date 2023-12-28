@@ -26,8 +26,8 @@ public class PriceServiceImpl implements PriceService {
             priceResponse.setEndDate(price.getEndDate().toString());
             priceResponse.setPrice(price.getPrice());
             priceResponse.setPriceToBeApplied(price.getPrice());
-            priceResponse.setProductId(price.getProductId().intValue());
-            priceResponse.setBrandId(price.getBrandId().intValue());
+            priceResponse.setProductId(price.getProductId());
+            priceResponse.setBrandId(price.getBrandId());
             return Optional.of(priceResponse);
         } else {
             return Optional.empty();

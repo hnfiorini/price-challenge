@@ -1,7 +1,10 @@
 package com.nf.pricechallenge.service.impl;
 
-import com.nf.pricechallenge.entities.Price;
-import com.nf.pricechallenge.repositories.PriceRepository;
+import com.nf.pricechallenge.dto.DataRequestDTO;
+import com.nf.pricechallenge.dto.DataResponse;
+import com.nf.pricechallenge.dto.PriceRequestDTO;
+import com.nf.pricechallenge.persistence.Persistence;
+import com.nf.pricechallenge.service.adapter.DataMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +28,10 @@ class PriceServiceImplTest {
     private PriceServiceImpl priceService;
 
     @Mock
-    private PriceRepository priceRepository;
+    private Persistence persistence;
+
+    @Mock
+    private DataMapper dataMapper;
 
     @Test
     void findPrice_existPrice() {
@@ -33,8 +39,7 @@ class PriceServiceImplTest {
         Long productId = 35455L;
         Long brandId = 1L;
 
-        Price priceEntity = Price.builder()
-                .id(1L)
+        DataResponse priceEntity = DataResponse.builder()
                 .brandId(brandId)
                 .productId(productId)
                 .price(new BigDecimal("35.5"))
@@ -44,9 +49,20 @@ class PriceServiceImplTest {
                 .currency("EUR")
                 .priority(0)
                 .build();
-        when(priceRepository.findPriceByConditions(any(), any(), any())).thenReturn(Optional.of(priceEntity));
+        DataRequestDTO dataRequest = DataRequestDTO.builder()
+                .brandId(brandId)
+                .dateToBeApplied(LocalDateTime.parse(dateToBeApplied))
+                .productId(productId)
+                .build();
+        when(dataMapper.toDto(any())).thenReturn(dataRequest);
+        when(persistence.find(any())).thenReturn(Optional.of(priceEntity));
 
-        Optional<PriceResponse> price = priceService.findPrice(LocalDateTime.parse(dateToBeApplied), productId, brandId);
+        PriceRequestDTO priceRequestDTO = PriceRequestDTO.builder()
+                .brandId(brandId)
+                .dateToBeApplied(LocalDateTime.parse(dateToBeApplied))
+                .productId(productId)
+                .build();
+        Optional<PriceResponse> price = priceService.findPrice(priceRequestDTO);
 
         assertTrue(price.isPresent());
         assertEquals(priceEntity.getPrice(), price.get().getPrice());
@@ -62,9 +78,21 @@ class PriceServiceImplTest {
         Long productId = 35455L;
         Long brandId = 2L;
 
-        when(priceRepository.findPriceByConditions(any(), any(), any())).thenReturn(Optional.empty());
+        DataRequestDTO dataRequest = DataRequestDTO.builder()
+                .brandId(brandId)
+                .dateToBeApplied(LocalDateTime.parse(dateToBeApplied))
+                .productId(productId)
+                .build();
+        when(dataMapper.toDto(any())).thenReturn(dataRequest);
 
-        Optional<PriceResponse> price = priceService.findPrice(LocalDateTime.parse(dateToBeApplied), productId, brandId);
+        when(persistence.find(any())).thenReturn(Optional.empty());
+
+        PriceRequestDTO priceRequestDTO = PriceRequestDTO.builder()
+                .brandId(brandId)
+                .dateToBeApplied(LocalDateTime.parse(dateToBeApplied))
+                .productId(productId)
+                .build();
+        Optional<PriceResponse> price = priceService.findPrice(priceRequestDTO);
 
         assertTrue(price.isEmpty());
     }

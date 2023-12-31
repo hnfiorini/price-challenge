@@ -1,4 +1,4 @@
-package com.nf.pricechallenge.entities;
+package com.nf.pricechallenge.domain;
 
 import javax.persistence.*;
 

@@ -53,6 +53,11 @@ You can run the test with this command
 mvn test
 ```
 
+## Swagger
+
+You can view the documentation of this application api in
+http://localhost:8080/swagger-ui/index.html#/
+
 ## License
 
 Nicolas Fiorini
